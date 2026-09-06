@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <link rel="apple-touch-icon" href=Rat--Streamline-Lucide.png">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>Calorie Tracker</title>
   
+  <!-- iOS Web App Meta Tags -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Calorie Tracker">
+  <link rel="apple-touch-icon" href="Rat---Streamline-Lucide.png">
   
   <style>
     :root {
@@ -111,7 +112,7 @@
       margin-bottom: 8px;
     }
 
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 12px;
       border: 1px solid var(--border-color);
@@ -179,6 +180,7 @@
       font-size: 13px;
       font-weight: 500;
       text-decoration: none;
+      cursor: pointer;
     }
 
     .nav-item.active {
@@ -194,44 +196,66 @@
     <div class="date" id="current-date">Sunday 6 September</div>
   </header>
 
-  <div class="card">
-    <div class="target-header">
-      <span>Today's calories</span>
-      <span>Target: <strong id="target-display">1,750</strong></span>
+  <!-- TODAY VIEW -->
+  <div id="view-today">
+    <div class="card">
+      <div class="target-header">
+        <span>Today's calories</span>
+        <span>Target: <strong id="target-display">1,750</strong></span>
+      </div>
+      <div class="calories-total"><span id="total-kcal">0</span> <span>kcal</span></div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+      <div class="remaining"><span id="remaining-kcal">1,750</span> kcal remaining</div>
     </div>
-    <div class="calories-total"><span id="total-kcal">0</span> <span>kcal</span></div>
-    <div class="progress-bar-bg">
-      <div class="progress-bar-fill" id="progress-fill"></div>
+
+    <div class="card">
+      <div class="card-title">Log food</div>
+      <div class="form-row">
+        <input type="text" id="food-name" placeholder="Food name" style="flex: 2;">
+        <input type="number" id="food-kcal" placeholder="kcal" style="flex: 1;">
+      </div>
+      <div class="form-row">
+        <select id="meal-type">
+          <option value="Breakfast">Breakfast</option>
+          <option value="Lunch">Lunch</option>
+          <option value="Dinner">Dinner</option>
+          <option value="Snack">Snack</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="addFood()">Add food</button>
     </div>
-    <div class="remaining"><span id="remaining-kcal">2,000</span> kcal remaining</div>
+
+    <div class="card">
+      <div class="card-title">Today</div>
+      <div id="log-list"></div>
+    </div>
   </div>
 
-  <div class="card">
-    <div class="card-title">Log food</div>
-    <div class="form-row">
-      <input type="text" id="food-name" placeholder="Food name" style="flex: 2;">
-      <input type="number" id="food-kcal" placeholder="kcal" style="flex: 1;">
+  <!-- NOTES VIEW -->
+  <div id="view-notes" style="display: none;">
+    <div class="card">
+      <div class="card-title">Daily Notes</div>
+      <textarea id="notes-input" placeholder="Type your notes here..." style="height: 180px; resize: none; margin-bottom: 12px;"></textarea>
+      <button class="btn-primary" onclick="saveNotes()">Save Notes</button>
+      <div id="save-status" style="font-size: 13px; color: #10b981; margin-top: 8px; display: none;">Saved!</div>
     </div>
-    <div class="form-row">
-      <select id="meal-type">
-        <option value="Breakfast">Breakfast</option>
-        <option value="Lunch">Lunch</option>
-        <option value="Dinner">Dinner</option>
-        <option value="Snack">Snack</option>
-      </select>
-    </div>
-    <button class="btn-primary" onclick="addFood()">Add food</button>
   </div>
 
-  <div class="card">
-    <div class="card-title">Today</div>
-    <div id="log-list"></div>
+  <!-- SETTINGS VIEW -->
+  <div id="view-settings" style="display: none;">
+    <div class="card">
+      <div class="card-title">Settings</div>
+      <p style="color: var(--text-muted); font-size: 14px;">App settings will appear here.</p>
+    </div>
   </div>
 
+  <!-- NAVIGATION -->
   <nav class="navbar">
-    <a href="#" class="nav-item active">Today</a>
-    <a href="#" class="nav-item">History</a>
-    <a href="#" class="nav-item">Settings</a>
+    <a class="nav-item active" onclick="switchTab('today', this)">Today</a>
+    <a class="nav-item" onclick="switchTab('notes', this)">Notes</a>
+    <a class="nav-item" onclick="switchTab('settings', this)">Settings</a>
   </nav>
 
   <script>
@@ -290,6 +314,30 @@
     function removeFood(index) {
       logs.splice(index, 1);
       render();
+    }
+
+    // TAB SWITCHING LOGIC
+    function switchTab(tabName, element) {
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+      element.classList.add('active');
+
+      document.getElementById('view-today').style.display = 'none';
+      document.getElementById('view-notes').style.display = 'none';
+      document.getElementById('view-settings').style.display = 'none';
+
+      document.getElementById('view-' + tabName).style.display = 'block';
+    }
+
+    // NOTES LOGIC
+    document.getElementById('notes-input').value = localStorage.getItem('daily_notes') || '';
+
+    function saveNotes() {
+      const noteText = document.getElementById('notes-input').value;
+      localStorage.setItem('daily_notes', noteText);
+      
+      const status = document.getElementById('save-status');
+      status.style.display = 'block';
+      setTimeout(() => { status.style.display = 'none'; }, 2000);
     }
 
     updateDate();
